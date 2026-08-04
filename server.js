@@ -7,7 +7,7 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const LIBRE_PORT = process.env.LIBRE_PORT || 3000;
 
 const LIBRENMS_URL = (process.env.LIBRENMS_URL || '').replace(/\/+$/, '');
 const LIBRENMS_TOKEN = process.env.LIBRENMS_TOKEN || '';
@@ -62,7 +62,7 @@ async function proxyGet(librenmsPath, res) {
 
 app.get('/api/devices', (req, res) => proxyGet('/devices', res));
 app.get('/api/devices/:id', (req, res) => proxyGet(`/devices/${encodeURIComponent(req.params.id)}`, res));
-app.get('/api/devices/:id/ports', (req, res) => proxyGet(`/devices/${encodeURIComponent(req.params.id)}/ports`, res));
+app.get('/api/devices/:id/LIBRE_PORTs', (req, res) => proxyGet(`/devices/${encodeURIComponent(req.params.id)}/LIBRE_PORTs`, res));
 app.get('/api/alerts', (req, res) => proxyGet('/alerts', res));
 app.get('/api/health-summary', async (req, res) => {
   // Lightweight combined view for the dashboard's top summary cards.
@@ -96,6 +96,6 @@ app.get('/api/health-summary', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`LibreNMS dashboard listening on port ${PORT}`);
+app.listen(LIBRE_PORT, () => {
+  console.log(`LibreNMS dashboard listening on LIBRE_PORT ${LIBRE_PORT}`);
 });
