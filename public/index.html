@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MOSS Network Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◈</span>
+    <div>
+      <h1>MOSS NETWATCH</h1>
+      <p class="brand-sub">MOSS Operations Dashboard</p>
+    </div>
+  </div>
+  <div class="conn-status" id="connStatus">
+    <span class="pulse-dot" id="pulseDot"></span>
+    <span id="connText">connecting&hellip;</span>
+  </div>
+</header>
+
+<div id="configBanner" class="config-banner hidden">
+  <strong>Not configured.</strong> Set <code>LIBRENMS_URL</code> and <code>LIBRENMS_TOKEN</code>
+  in <code>env/.env</code>, then restart the container.
+</div>
+
+<main>
+  <section class="stat-grid" id="statGrid">
+    <div class="stat-card">
+      <span class="stat-label">Devices</span>
+      <span class="stat-value" id="statTotal">&mdash;</span>
+    </div>
+    <div class="stat-card stat-up">
+      <span class="stat-label">Up</span>
+      <span class="stat-value" id="statUp">&mdash;</span>
+    </div>
+    <div class="stat-card stat-down">
+      <span class="stat-label">Down</span>
+      <span class="stat-value" id="statDown">&mdash;</span>
+    </div>
+    <div class="stat-card stat-alert">
+      <span class="stat-label">Active Alerts</span>
+      <span class="stat-value" id="statAlerts">&mdash;</span>
+    </div>
+  </section>
+
+  <section class="panels">
+    <div class="panel panel-devices">
+      <div class="panel-head">
+        <h2>Devices</h2>
+        <input type="search" id="deviceFilter" placeholder="filter devices&hellip;" />
+      </div>
+      <div class="table-wrap">
+        <table id="deviceTable">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Hostname</th>
+              <th>Sysname</th>
+              <th>OS</th>
+              <th>Type</th>
+              <th>Uptime</th>
+            </tr>
+          </thead>
+          <tbody id="deviceRows">
+            <tr class="empty-row"><td colspan="6">Loading devices&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel panel-alerts">
+      <div class="panel-head">
+        <h2>Active Alerts</h2>
+      </div>
+      <ul class="alert-list" id="alertList">
+        <li class="empty-row">Loading alerts&hellip;</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span id="lastUpdated">&mdash;</span>
+  <span class="footer-sep">&middot;</span>
+  <span>polling every <span id="pollInterval">&mdash;</span></span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

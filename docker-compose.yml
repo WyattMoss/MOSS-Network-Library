@@ -1,0 +1,9 @@
+services:
+  librenms-dashboard:
+    build: .
+    container_name: librenms-dashboard
+    restart: unless-stopped
+    env_file:
+      - ./env/.env
+    ports:
+      - "${HOST_PORT:-8080}:3000"
