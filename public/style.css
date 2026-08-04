@@ -7,6 +7,8 @@
   --text-dim: #7c8a94;
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
   --sans: 'Inter', system-ui, sans-serif;
+  --logo: #046bd2;
+  --logo_shadow: #045cb4;
 
   --green: #34d399;
   --red: #f2495c;
@@ -53,9 +55,10 @@ body {
 .brand { display: flex; align-items: center; gap: 12px; }
 
 .brand-mark {
-  font-size: 22px;
-  color: var(--cyan);
-  text-shadow: 0 0 12px rgba(4, 107, 210, 1);
+  width: 150px;
+  height: auto;
+  display: block;
+  flex-shrink: 0;
 }
 
 .brand h1 {
