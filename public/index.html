@@ -24,8 +24,23 @@
     </div>
   </div>
   <div class="conn-status" id="connStatus">
-    <span class="pulse-dot" id="pulseDot"></span>
-    <span id="connText">connecting&hellip;</span>
+    <button class="conn-toggle" id="connToggle" type="button" aria-expanded="false" aria-controls="connDropdown">
+      <span class="pulse-dot" id="pulseDot"></span>
+      <span id="connText">connecting&hellip;</span>
+      <span class="conn-chevron">&#9662;</span>
+    </button>
+    <div class="conn-dropdown hidden" id="connDropdown">
+      <div class="conn-row" id="connRowLibrenms">
+        <span class="conn-dot" id="connDotLibrenms"></span>
+        <span class="conn-row-name">LibreNMS</span>
+        <span class="conn-row-state" id="connStateLibrenms">&mdash;</span>
+      </div>
+      <div class="conn-row" id="connRowFortigate">
+        <span class="conn-dot" id="connDotFortigate"></span>
+        <span class="conn-row-name">FortiGate</span>
+        <span class="conn-row-state" id="connStateFortigate">&mdash;</span>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -106,9 +121,12 @@
 </main>
 
 <footer>
-  <span id="lastUpdated">&mdash;</span>
-  <span class="footer-sep">&middot;</span>
-  <span>polling every <span id="pollInterval">&mdash;</span></span>
+  <div class="footer-left">
+    <span id="lastUpdated">&mdash;</span>
+    <span class="footer-sep">&middot;</span>
+    <span>polling every <span id="pollInterval">&mdash;</span></span>
+  </div>
+  <div class="footer-right">Created and developed by Wyatt Cliff</div>
 </footer>
 
 <script src="app.js"></script>
