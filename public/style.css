@@ -8,7 +8,7 @@
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
   --sans: 'Inter', system-ui, sans-serif;
   --logo: #046bd2;
-  --logo_shadow: #045cb4;
+  --logo-shadow: #045cb4;
 
   --green: #34d399;
   --red: #f2495c;
@@ -59,6 +59,7 @@ body {
   height: auto;
   display: block;
   flex-shrink: 0;
+  filter: drop-shadow(0 0 10px rgba(4, 108, 210, 0.25));
 }
 
 .brand h1 {
@@ -126,7 +127,75 @@ body {
 }
 .hidden { display: none; }
 
-main { padding: 24px 32px 48px; }
+main {
+  padding: 24px 32px 48px;
+}
+
+/* --- WAN throughput panel (top of page) --- */
+
+.wan-panel {
+  margin-bottom: 24px;
+}
+
+.panel-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.wan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+  padding: 18px;
+}
+
+.wan-card {
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+}
+
+.wan-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.wan-card-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wan-card-iface {
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-left: 6px;
+}
+
+.wan-live-values {
+  display: flex;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.wan-live-values .rx { color: var(--cyan); }
+.wan-live-values .tx { color: var(--amber); }
+
+.wan-chart-wrap {
+  height: 160px;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .wan-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Summary stat cards --- */
 
 .stat-grid {
   display: grid;
@@ -161,6 +230,8 @@ main { padding: 24px 32px 48px; }
 .stat-up .stat-value { color: var(--green); }
 .stat-down .stat-value { color: var(--red); }
 .stat-alert .stat-value { color: var(--amber); }
+
+/* --- Device table + alerts panels --- */
 
 .panels {
   display: grid;
@@ -202,7 +273,7 @@ main { padding: 24px 32px 48px; }
   border-radius: 4px;
   width: 160px;
 }
-#deviceFilter:focus { outline: 1px solid var(--cyan); }
+#deviceFilter:focus { outline: 1px solid var(--logo); }
 
 .table-wrap { max-height: 560px; overflow-y: auto; }
 

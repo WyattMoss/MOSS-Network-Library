@@ -1,7 +1,7 @@
 {
   "name": "librenms-dashboard",
   "version": "1.0.0",
-  "description": "Self-hosted dashboard for the LibreNMS API",
+  "description": "Self-hosted dashboard for LibreNMS + FortiGate, with a WAN throughput graph",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -10,6 +10,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "better-sqlite3": "^11.3.0",
     "express": "^4.19.2"
   }
 }

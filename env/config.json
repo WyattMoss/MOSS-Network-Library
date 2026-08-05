@@ -1,0 +1,6 @@
+{
+  "WanInterfaces": [
+    { "Name": "Metronet", "Interface": "wan1", "CapacityMbps": 500 },
+    { "Name": "ATT",      "Interface": "wan2", "CapacityMbps": 500 }
+  ]
+}

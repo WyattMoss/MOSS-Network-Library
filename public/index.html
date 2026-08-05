@@ -6,6 +6,9 @@
 <title>MOSS//Network Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/3.6.0/cdn.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.bundle.min.js"></script>
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -27,11 +30,26 @@
 </header>
 
 <div id="configBanner" class="config-banner hidden">
-  <strong>Not configured.</strong> Set <code>LIBRENMS_URL</code> and <code>LIBRENMS_TOKEN</code>
+  <strong>LibreNMS not configured.</strong> Set <code>LIBRENMS_URL</code> and <code>LIBRENMS_TOKEN</code>
   in <code>env/.env</code>, then restart the container.
+</div>
+<div id="fortiConfigBanner" class="config-banner hidden">
+  <strong>FortiGate not configured.</strong> Set <code>FORTIGATE_URL</code> and <code>FORTIGATE_TOKEN</code>
+  in <code>env/.env</code> to enable the WAN throughput graph.
 </div>
 
 <main>
+  <!-- WAN throughput: input/output over time, at the top -->
+  <section class="panel wan-panel" id="wanPanel">
+    <div class="panel-head">
+      <h2>WAN Throughput</h2>
+      <span class="panel-sub" id="wanHistoryLabel">&mdash;</span>
+    </div>
+    <div class="wan-grid" id="wanGrid">
+      <p class="empty-row" id="wanLoading">Loading WAN interfaces&hellip;</p>
+    </div>
+  </section>
+
   <section class="stat-grid" id="statGrid">
     <div class="stat-card">
       <span class="stat-label">Devices</span>

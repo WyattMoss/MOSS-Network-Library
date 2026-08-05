@@ -1,102 +1,121 @@
-# NetWatch — LibreNMS Dashboard
+# NetWatch — LibreNMS + FortiGate Dashboard
 
-A small, self-hosted dashboard for a [LibreNMS](https://www.librenms.org/) instance.
-The container talks to the LibreNMS API on the server side, so your API token
-never touches the browser. Everything runs from a single `docker compose up`.
+A self-hosted dashboard combining:
+- **LibreNMS** device/alert monitoring (device table, status, active alerts)
+- A **WAN throughput graph** (input/output over time for your FortiGate's
+  WAN interfaces), backed by a small rolling SQLite history
+
+Everything runs in one container on one port. The browser never sees your
+API tokens — the Node backend holds them and proxies all API calls.
 
 ## What's inside
 
 ```
 librenms-dashboard/
 ├── env/
-│   └── .env.example    ← copy to env/.env and fill in
-├── public/              ← static dashboard (HTML/CSS/JS)
-├── server.js             ← Express backend / API proxy
+│   ├── .env.example    ← copy to env/.env, fill in tokens
+│   └── config.json     ← which WAN interfaces to graph (edit anytime)
+├── data/                ← SQLite history file lives here (auto-created)
+├── public/               ← dashboard UI (HTML/CSS/JS + Chart.js)
+├── server.js              ← Express backend: LibreNMS + FortiGate proxy + WAN poller
 ├── Dockerfile
 └── docker-compose.yml
 ```
 
-The browser only ever calls `/api/*` on this app. The backend is the only
-thing that holds `LIBRENMS_URL` and `LIBRENMS_TOKEN`, and it attaches the
-`X-Auth-Token` header when it calls LibreNMS.
+## Setup
 
-## Setup (Docker — recommended)
+1. **Get your tokens**
+   - LibreNMS: *Settings → API → Manage API Tokens*
+   - FortiGate: *System → Admin Profiles* → create a REST API Admin → generate a token
 
-1. **Get a LibreNMS API token**
-   In LibreNMS: *Settings → API → Manage API Tokens* → create a token for a
-   read-only (or full) user.
-
-2. **Configure**
+2. **Configure secrets**
    ```bash
    cp env/.env.example env/.env
    ```
    Edit `env/.env`:
    ```env
    LIBRENMS_URL=https://librenms.example.com
-   LIBRENMS_TOKEN=your-token-here
-   REFRESH_INTERVAL_MS=30000
+   LIBRENMS_TOKEN=your-librenms-token
+
+   FORTIGATE_URL=https://192.168.1.1:443
+   FORTIGATE_TOKEN=your-fortigate-token
+   FORTIGATE_VDOM=root
+   FORTIGATE_INSECURE_TLS=false   # true only if using a self-signed cert on a trusted network
+
+   WAN_POLL_INTERVAL_MS=30000
+   WAN_HISTORY_RETENTION_HOURS=3
    HOST_PORT=8080
    ```
 
-3. **Run it**
+3. **Pick which interfaces to graph** — `env/config.json`:
+   ```json
+   {
+     "WanInterfaces": [
+       { "Name": "Metronet", "Interface": "wan1", "CapacityMbps": 500 },
+       { "Name": "ATT",      "Interface": "wan2", "CapacityMbps": 500 }
+     ]
+   }
+   ```
+   `Interface` must match the exact interface name on your FortiGate
+   (Network → Interfaces). `Name` is just a friendly label for the chart.
+   This file is mounted into the container, so editing it and saving takes
+   effect on the **next poll** — no rebuild needed.
+
+4. **Run it**
    ```bash
    docker compose up -d --build
    ```
 
-4. **Open it**
-   Visit `http://localhost:8080` (or whatever `HOST_PORT` you set).
+5. **Open it**
+   `http://localhost:8080` (or whatever `HOST_PORT` you set)
 
-That's the whole setup. `env/.env` is gitignored, so your token stays local
-and is never baked into the image.
+## How the WAN graph works
 
-To stop it:
-```bash
-docker compose down
-```
+- Every `WAN_POLL_INTERVAL_MS`, the backend calls FortiGate's
+  `/api/v2/monitor/system/interface`, reads each configured interface's
+  cumulative `rx_bytes`/`tx_bytes` counters, and converts the delta since
+  the last poll into Mbps in/out.
+- Each sample is written to a SQLite file at `./data/wan-history.sqlite`
+  (mounted from the host, so it survives container restarts and you can
+  inspect it directly).
+- On every poll, rows older than `WAN_HISTORY_RETENTION_HOURS` are deleted
+  — so the file stays small and only ever holds a few hours of history.
+- The frontend polls `/api/wan/history` and redraws the in/out line charts.
 
-To pick up a change to `env/.env`:
-```bash
-docker compose restart
-```
+If you ever want to reset the history, just stop the container and delete
+`data/wan-history.sqlite*`.
 
-## Setup (without Docker)
+## What the dashboard shows
 
-```bash
-npm install
-cp env/.env.example env/.env   # then edit it
-export $(grep -v '^#' env/.env | xargs)   # or use a tool like dotenv-cli
-npm start
-```
+- **WAN Throughput** (top) — one chart per configured interface, in/out
+  Mbps over the retention window, plus live current values
+- **Summary cards** — total devices, up/down, active alerts (LibreNMS)
+- **Device table** — status, hostname, sysName, OS, hardware, uptime, with
+  a live filter box
+- **Active alerts** — from LibreNMS's `/alerts?state=1`
 
-The app listens on `PORT` (default `3000`).
+## Commands
 
-## What it shows
-
-- **Summary cards** — total devices, devices up/down, active alerts
-- **Device table** — status, hostname, sysName, OS, hardware type, uptime,
-  with a live filter box
-- **Active alerts** — pulled from LibreNMS's `/alerts?state=1`
-
-It polls on the interval set by `REFRESH_INTERVAL_MS` (default 30s).
-
-## API endpoints this app exposes
-
-These are served by the Node backend, not LibreNMS directly:
-
-| Route | Purpose |
+| Task | Command |
 |---|---|
-| `GET /api/config` | Poll interval + whether env vars are set |
-| `GET /api/health-summary` | Aggregated counts for the top cards |
-| `GET /api/devices` | Proxies LibreNMS `/devices` |
-| `GET /api/devices/:id` | Proxies LibreNMS `/devices/:id` |
-| `GET /api/devices/:id/ports` | Proxies LibreNMS `/devices/:id/ports` |
-| `GET /api/alerts` | Proxies LibreNMS `/alerts` |
+| Start | `docker compose up -d --build` |
+| View logs | `docker compose logs -f` |
+| Stop | `docker compose down` |
+| Restart after editing `env/.env` | `docker compose restart` |
+| Pick up code changes | `docker compose up -d --build` |
+
+`env/config.json` changes don't need a restart — it's re-read every poll.
 
 ## Troubleshooting
 
-- **Yellow "Not configured" banner** — `env/.env` is missing or the two
-  LibreNMS variables are blank. Fill them in and `docker compose restart`.
-- **"Could not reach LibreNMS"** — check `LIBRENMS_URL` is reachable from
-  inside the container (not just your host) and has no trailing slash.
-- **401/403 from LibreNMS** — the token is invalid, revoked, or belongs to a
-  user without API permissions.
+- **Yellow banners in the UI** — the corresponding `env/.env` values are
+  missing. Fill them in and `docker compose restart`.
+- **WAN chart stays empty** — check `docker compose logs -f` for
+  `[poll] Interface "wanX" not found in FortiGate response.` — the
+  `Interface` name in `config.json` doesn't match your FortiGate's actual
+  interface name.
+- **"Could not reach FortiGate"** — check `FORTIGATE_URL` is reachable
+  from inside the container, and `FORTIGATE_INSECURE_TLS=true` if it uses
+  a self-signed cert.
+- **401/403 from FortiGate or LibreNMS** — token is invalid, revoked, or
+  lacks permissions.

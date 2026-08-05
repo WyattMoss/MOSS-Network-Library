@@ -5,5 +5,12 @@ services:
     restart: unless-stopped
     env_file:
       - ./env/.env
+    volumes:
+      # Mounted (not baked into the image) so you can edit which WAN
+      # interfaces to graph without rebuilding — re-read on every poll.
+      - ./env/config.json:/app/env/config.json:ro
+      # SQLite history file lives here so you can inspect/delete it
+      # without going into the container. Safe to delete anytime.
+      - ./data:/app/data
     ports:
       - "${HOST_PORT:-8080}:3000"
