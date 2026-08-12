@@ -108,11 +108,10 @@ function renderDevices(devices) {
 
   deviceRows.innerHTML = filtered
     .map((d) => {
-      const up = Number(d.status) === 1;
       if(d.status === 0){
       return `
         <tr>
-          <td><span class="status-dot ${up ? 'up' : 'down'}"></span></td>
+          <td><span class="status-dot down"></span></td>
           <td>${escapeHtml(d.hostname || '—')}</td>
           <td>${escapeHtml(d.sysName || '—')}</td>
           <td>${escapeHtml(d.os || '—')}</td>
@@ -185,59 +184,64 @@ function ensureWanCard(key, name) {
         <span class="tx">↑ <span id="wan-tx-${key}">—</span></span>
       </div>
     </div>
-    <div class="wan-chart-wrap"><canvas id="wan-canvas-${key}"></canvas></div>
+    <div class="wan-chart-wrap"><canvas id="wan-canvas-${key}" width="400" height="160"></canvas></div>
   `;
   wanGrid.appendChild(card);
 
-  const ctx = document.getElementById(`wan-canvas-${key}`);
-  wanCharts[key] = new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [
-        {
-          label: 'In (Mbps)',
-          data: [],
-          borderColor: '#4fd1e8',
-          backgroundColor: 'rgba(79, 209, 232, 0.1)',
-          fill: true,
-          tension: 0.25,
-          pointRadius: 0,
-          borderWidth: 1.5,
+  // Use setTimeout to ensure the canvas is properly mounted before Chart.js initializes
+  setTimeout(() => {
+    const ctx = document.getElementById(`wan-canvas-${key}`);
+    if (!ctx) return;
+    
+    wanCharts[key] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: 'In (Mbps)',
+            data: [],
+            borderColor: '#4fd1e8',
+            backgroundColor: 'rgba(79, 209, 232, 0.1)',
+            fill: true,
+            tension: 0.25,
+            pointRadius: 0,
+            borderWidth: 1.5,
+          },
+          {
+            label: 'Out (Mbps)',
+            data: [],
+            borderColor: '#f5a623',
+            backgroundColor: 'rgba(245, 166, 35, 0.08)',
+            fill: true,
+            tension: 0.25,
+            pointRadius: 0,
+            borderWidth: 1.5,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'minute' },
+            ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
+            grid: { color: '#232b31' },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
+            grid: { color: '#232b31' },
+          },
         },
-        {
-          label: 'Out (Mbps)',
-          data: [],
-          borderColor: '#f5a623',
-          backgroundColor: 'rgba(245, 166, 35, 0.08)',
-          fill: true,
-          tension: 0.25,
-          pointRadius: 0,
-          borderWidth: 1.5,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      scales: {
-        x: {
-          type: 'time',
-          time: { unit: 'minute' },
-          ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
-          grid: { color: '#232b31' },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
-          grid: { color: '#232b31' },
+        plugins: {
+          legend: { labels: { color: '#d7dee4', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
         },
       },
-      plugins: {
-        legend: { labels: { color: '#d7dee4', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
-      },
-    },
-  });
+    });
+  }, 0);
 }
 
 async function refreshWan() {
@@ -257,9 +261,11 @@ async function refreshWan() {
     document.getElementById(`wan-tx-${key}`).textContent = fmtMbps(info.latestTxMbps);
 
     const chart = wanCharts[key];
-    chart.data.datasets[0].data = info.series.map((p) => ({ x: p.t, y: p.rx }));
-    chart.data.datasets[1].data = info.series.map((p) => ({ x: p.t, y: p.tx }));
-    chart.update('none');
+    if (chart && info.series) {
+      chart.data.datasets[0].data = info.series.map((p) => ({ x: new Date(p.t), y: p.rx }));
+      chart.data.datasets[1].data = info.series.map((p) => ({ x: new Date(p.t), y: p.tx }));
+      chart.update();
+    }
   }
 }
 
