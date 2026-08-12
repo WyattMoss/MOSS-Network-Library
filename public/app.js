@@ -109,6 +109,7 @@ function renderDevices(devices) {
   deviceRows.innerHTML = filtered
     .map((d) => {
       const up = Number(d.status) === 1;
+      if(d.status === 0){
       return `
         <tr>
           <td><span class="status-dot ${up ? 'up' : 'down'}"></span></td>
@@ -116,9 +117,8 @@ function renderDevices(devices) {
           <td>${escapeHtml(d.sysName || '—')}</td>
           <td>${escapeHtml(d.os || '—')}</td>
           <td>${escapeHtml(d.type || d.hardware || '—')}</td>
-          <td>${formatUptime(d.uptime)}</td>
         </tr>`;
-    })
+  }})
     .join('');
 }
 

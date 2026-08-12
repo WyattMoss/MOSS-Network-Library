@@ -95,7 +95,7 @@ const selectHistory = db.prepare('SELECT t, rx_mbps AS rx, tx_mbps AS tx FROM wa
 const lastCounters = {};
 
 async function fetchFortiInterfaces() {
-  const params = new URLSearchParams({ vdom: FORTIGATE_VDOM });
+  const params = new URLSearchParams({ vdom: FORTIGATE_VDOM });  // <---- Here for VDOMs, not using so temp disabled
   const upstream = await fetch(`${FORTIGATE_URL}/api/v2/monitor/system/interface?${params.toString()}`, {
     headers: { Authorization: `Bearer ${FORTIGATE_TOKEN}` },
   });
@@ -260,7 +260,7 @@ async function proxyFortiGet(fortiPath, res, extraParams = {}) {
   if (!FORTIGATE_URL || !FORTIGATE_TOKEN) {
     return res.status(503).json({ error: 'FortiGate is not configured. Set FORTIGATE_URL and FORTIGATE_TOKEN in env/.env.' });
   }
-  const params = new URLSearchParams({ vdom: FORTIGATE_VDOM, ...extraParams });
+  // const params = new URLSearchParams({ vdom: FORTIGATE_VDOM, ...extraParams });   <---- Here for VDOMs, not using so temp disabled
   try {
     const upstream = await fetch(`${FORTIGATE_URL}${fortiPath}?${params.toString()}`, {
       headers: { Authorization: `Bearer ${FORTIGATE_TOKEN}` },

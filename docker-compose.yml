@@ -1,7 +1,7 @@
 services:
-  librenms-dashboard:
+  Network-Dashboard:
     build: .
-    container_name: librenms-dashboard
+    container_name: Network-Dashboard
     restart: unless-stopped
     env_file:
       - ./env/.env
