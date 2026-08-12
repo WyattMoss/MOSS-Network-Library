@@ -1,5 +1,5 @@
 {
-  "name": "Network-Dashboard",
+  "name": "network-dashboard",
   "version": "1.0.0",
   "description": "Self-hosted dashboard for LibreNMS + FortiGate, with a WAN throughput graph",
   "main": "server.js",

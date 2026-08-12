@@ -1,7 +1,7 @@
 services:
-  Network-Dashboard:
+  network-dashboard:
     build: .
-    container_name: Network-Dashboard
+    container_name: network-dashboard
     restart: unless-stopped
     env_file:
       - ./env/.env
