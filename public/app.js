@@ -170,7 +170,6 @@ function fmtMbps(v) {
 
 function ensureWanCard(key, name) {
   if (document.getElementById(`wan-card-${key}`)) return;
-
   document.getElementById('wanLoading')?.remove();
 
   const card = document.createElement('div');
@@ -188,55 +187,61 @@ function ensureWanCard(key, name) {
   `;
   wanGrid.appendChild(card);
 
-  const ctx = document.getElementById(`wan-canvas-${key}`);
-  wanCharts[key] = new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: [
-        {
-          label: 'In (Mbps)',
-          data: [],
-          borderColor: '#4fd1e8',
-          backgroundColor: 'rgba(79, 209, 232, 0.1)',
-          fill: true,
-          tension: 0.25,
-          pointRadius: 0,
-          borderWidth: 1.5,
+  try{
+    const ctx = document.getElementById(`wan-canvas-${key}`);
+    wanCharts[key] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: 'In (Mbps)',
+            data: [],
+            borderColor: '#4fd1e8',
+            backgroundColor: 'rgba(79, 209, 232, 0.1)',
+            fill: true,
+            tension: 0.25,
+            pointRadius: 0,
+            borderWidth: 1.5,
+          },
+          {
+            label: 'Out (Mbps)',
+            data: [],
+            borderColor: '#f5a623',
+            backgroundColor: 'rgba(245, 166, 35, 0.08)',
+            fill: true,
+            tension: 0.25,
+            pointRadius: 0,
+            borderWidth: 1.5,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          x: {
+            type: 'time',
+            time: { unit: 'minute' },
+            ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
+            grid: { color: '#232b31' },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
+            grid: { color: '#232b31' },
+          },
         },
-        {
-          label: 'Out (Mbps)',
-          data: [],
-          borderColor: '#f5a623',
-          backgroundColor: 'rgba(245, 166, 35, 0.08)',
-          fill: true,
-          tension: 0.25,
-          pointRadius: 0,
-          borderWidth: 1.5,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: false,
-      scales: {
-        x: {
-          type: 'time',
-          time: { unit: 'minute' },
-          ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
-          grid: { color: '#232b31' },
-        },
-        y: {
-          beginAtZero: true,
-          ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
-          grid: { color: '#232b31' },
+        plugins: {
+          legend: { labels: { color: '#d7dee4', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
         },
       },
-      plugins: {
-        legend: { labels: { color: '#d7dee4', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
-      },
-    },
-  });
+    });
+  }
+  catch (err)
+  {
+    console.error(`[chart] failed to build chart for ${key}:`, err);
+  }
 }
 
 async function refreshWan() {
