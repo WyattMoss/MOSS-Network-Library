@@ -264,9 +264,16 @@ async function refreshWan() {
   }
 }
 
-async function checkFortigate() {{
+async function checkFortigate() {
   const data = await fetchJson('/api/wan/history');
   fortiConfigBanner.classList.add('hidden');
+  
+  // If the server reports a polling error, FortiGate is not connected
+  if (data.lastPollError) {
+    const err = new Error(data.lastPollError);
+    err.body = { error: data.lastPollError };
+    throw err;
+  }
 }
 
 // ---------------- Poll loop ----------------

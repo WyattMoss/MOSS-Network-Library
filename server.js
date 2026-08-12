@@ -165,8 +165,14 @@ async function pollOnce() {
   }
 }
 
-pollOnce();
-setInterval(pollOnce, WAN_POLL_INTERVAL_MS);
+pollOnce().catch((err) => {
+  console.error('[poll] Initial poll failed:', err.message);
+});
+setInterval(() => {
+  pollOnce().catch((err) => {
+    console.error('[poll] Poll cycle failed:', err.message);
+  });
+}, WAN_POLL_INTERVAL_MS);
 
 // --- HTTP API ------------------------------------------------------------
 
@@ -260,9 +266,8 @@ async function proxyFortiGet(fortiPath, res, extraParams = {}) {
   if (!FORTIGATE_URL || !FORTIGATE_TOKEN) {
     return res.status(503).json({ error: 'FortiGate is not configured. Set FORTIGATE_URL and FORTIGATE_TOKEN in env/.env.' });
   }
-  // const params = new URLSearchParams({ vdom: FORTIGATE_VDOM, ...extraParams });   <---- Here for VDOMs, not using so temp disabled
   try {
-    const upstream = await fetch(`${FORTIGATE_URL}${fortiPath}?${params.toString()}`, {
+    const upstream = await fetch(`${FORTIGATE_URL}${fortiPath}`, {
       headers: { Authorization: `Bearer ${FORTIGATE_TOKEN}` },
     });
     const body = await upstream.json().catch(() => null);
