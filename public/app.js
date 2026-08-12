@@ -184,64 +184,59 @@ function ensureWanCard(key, name) {
         <span class="tx">↑ <span id="wan-tx-${key}">—</span></span>
       </div>
     </div>
-    <div class="wan-chart-wrap"><canvas id="wan-canvas-${key}" width="400" height="160"></canvas></div>
+    <div class="wan-chart-wrap"><canvas id="wan-canvas-${key}"></canvas></div>
   `;
   wanGrid.appendChild(card);
 
-  // Use setTimeout to ensure the canvas is properly mounted before Chart.js initializes
-  setTimeout(() => {
-    const ctx = document.getElementById(`wan-canvas-${key}`);
-    if (!ctx) return;
-    
-    wanCharts[key] = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [
-          {
-            label: 'In (Mbps)',
-            data: [],
-            borderColor: '#4fd1e8',
-            backgroundColor: 'rgba(79, 209, 232, 0.1)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 0,
-            borderWidth: 1.5,
-          },
-          {
-            label: 'Out (Mbps)',
-            data: [],
-            borderColor: '#f5a623',
-            backgroundColor: 'rgba(245, 166, 35, 0.08)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 0,
-            borderWidth: 1.5,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        scales: {
-          x: {
-            type: 'time',
-            time: { unit: 'minute' },
-            ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
-            grid: { color: '#232b31' },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
-            grid: { color: '#232b31' },
-          },
+  const ctx = document.getElementById(`wan-canvas-${key}`);
+  wanCharts[key] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [
+        {
+          label: 'In (Mbps)',
+          data: [],
+          borderColor: '#4fd1e8',
+          backgroundColor: 'rgba(79, 209, 232, 0.1)',
+          fill: true,
+          tension: 0.25,
+          pointRadius: 0,
+          borderWidth: 1.5,
         },
-        plugins: {
-          legend: { labels: { color: '#d7dee4', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
+        {
+          label: 'Out (Mbps)',
+          data: [],
+          borderColor: '#f5a623',
+          backgroundColor: 'rgba(245, 166, 35, 0.08)',
+          fill: true,
+          tension: 0.25,
+          pointRadius: 0,
+          borderWidth: 1.5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: 'minute' },
+          ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
+          grid: { color: '#232b31' },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#7c8a94', font: { family: 'IBM Plex Mono', size: 10 } },
+          grid: { color: '#232b31' },
         },
       },
-    });
-  }, 0);
+      plugins: {
+        legend: { labels: { color: '#d7dee4', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
+      },
+    },
+  });
 }
 
 async function refreshWan() {
@@ -261,7 +256,7 @@ async function refreshWan() {
     document.getElementById(`wan-tx-${key}`).textContent = fmtMbps(info.latestTxMbps);
 
     const chart = wanCharts[key];
-    if (chart && info.series) {
+    if (chart && info.series && Array.isArray(info.series)) {
       chart.data.datasets[0].data = info.series.map((p) => ({ x: new Date(p.t), y: p.rx }));
       chart.data.datasets[1].data = info.series.map((p) => ({ x: new Date(p.t), y: p.tx }));
       chart.update();
@@ -269,10 +264,15 @@ async function refreshWan() {
   }
 }
 
+async function checkFortigate() {{
+  const data = await fetchJson('/api/wan/history');
+  fortiConfigBanner.classList.add('hidden');
+}
+
 // ---------------- Poll loop ----------------
 
 async function refresh() {
-  const results = await Promise.allSettled([refreshLibreNMS(), refreshWan()]);
+  const results = await Promise.allSettled([refreshLibreNMS(), checkFortigate()]);
   const [libreResult, wanResult] = results;
   const librenmsOk = libreResult.status === 'fulfilled';
   const fortigateOk = wanResult.status === 'fulfilled';
