@@ -279,8 +279,8 @@ async function checkFortigate() {
 // ---------------- Poll loop ----------------
 
 async function refresh() {
-  const results = await Promise.allSettled([refreshLibreNMS(), checkFortigate()]);
-  const [libreResult, wanResult] = results;
+  const results = await Promise.allSettled([refreshLibreNMS(), checkFortigate(), refreshWan()]);
+  const [libreResult, wanResult, wanRefreshResult] = results;
   const librenmsOk = libreResult.status === 'fulfilled';
   const fortigateOk = wanResult.status === 'fulfilled';
 
