@@ -129,18 +129,18 @@ If you ever want to reset the history, just stop the container and delete
 - **Thanks for a great summer!** — LMK if anything needs to be added as I can help with the program and what's going on.
 - **Creating your own clone** — Currently the RasPi uses my repo, if you decide to make your own changes please run the following commands to make the transition as easy as possible
   1. **End Previous Running Containers** 
-    '''bash
+    ```bash
       docker compose down
-    '''
+    ```
   2. **Clone your repo** — Set your repo to public and download
-    '''bash
+    ```bash
       cd ~
       cd YOUR_GIT_PROJECT_NAME
       git clone YOUR_GIT_URL_HERE
-    '''
+    ```
   3. **Run the project** — Run using docker commands shown earlier
-    '''bash
+    ```bash
       docker compose build
       docker compose up
-    '''
+    ```
   
