@@ -20,6 +20,10 @@ let allDevices = [];
 let pollTimer = null;
 const wanCharts = {}; // interfaceKey -> Chart instance
 
+if (typeof Chart === 'undefined') {
+  console.error('[chart] Chart.js failed to load — check network tab for blocked/failed script requests.');
+}
+
 function setConnState(state) {
   pulseDot.classList.remove('ok', 'warn', 'bad');
   if (state === 'ok') {
@@ -102,7 +106,8 @@ function renderDevices(devices) {
     : devices;
 
   if (filtered.length === 0) {
-    deviceRows.innerHTML = `<tr class="empty-row"><td colspan="6">No devices match.</td></tr>`;
+    const msg = downDevices.length === 0 ? 'All devices up.' : 'No down devices match filter.';
+    deviceRows.innerHTML = `<tr class="empty-row"><td colspan="5">${msg}</td></tr>`;
     return;
   }
 
