@@ -3,7 +3,7 @@
 A self-hosted dashboard combining:
 - **LibreNMS** device/alert monitoring (device table, status, active alerts)
 - A **WAN throughput graph** (input/output over time for your FortiGate's
-  WAN interfaces), backed by a small rolling SQLite history
+  WAN interfaces), backed by a small rolling SQLite history, and jsdelivr's API for the graph.
 
 Everything runs in one container on one port. The browser never sees your
 API tokens — the Node backend holds them and proxies all API calls.
@@ -11,7 +11,7 @@ API tokens — the Node backend holds them and proxies all API calls.
 ## What's inside
 
 ```
-librenms-dashboard/
+network-dashboard/
 ├── env/
 │   ├── .env.example    ← copy to env/.env, fill in tokens
 │   └── config.json     ← which WAN interfaces to graph (edit anytime)
@@ -80,7 +80,7 @@ librenms-dashboard/
   inspect it directly).
 - On every poll, rows older than `WAN_HISTORY_RETENTION_HOURS` are deleted
   — so the file stays small and only ever holds a few hours of history.
-- The frontend polls `/api/wan/history` and redraws the in/out line charts.
+- The frontend polls `/api/wan/history` and redraws the in/out line charts using jsdelivr's API client.
 
 If you ever want to reset the history, just stop the container and delete
 `data/wan-history.sqlite*`.
@@ -88,7 +88,7 @@ If you ever want to reset the history, just stop the container and delete
 ## What the dashboard shows
 
 - **WAN Throughput** (top) — one chart per configured interface, in/out
-  Mbps over the retention window, plus live current values
+  Mbps over the retention window, plus live current values all through Fortigate's API Client
 - **Summary cards** — total devices, up/down, active alerts (LibreNMS)
 - **Device table** — status, hostname, sysName, OS, hardware, uptime, with
   a live filter box
@@ -98,11 +98,14 @@ If you ever want to reset the history, just stop the container and delete
 
 | Task | Command |
 |---|---|
-| Start | `docker compose up -d --build` |
+| Start | `docker compose up -d --build  --remove-orphans` |
 | View logs | `docker compose logs -f` |
 | Stop | `docker compose down` |
 | Restart after editing `env/.env` | `docker compose restart` |
 | Pick up code changes | `docker compose up -d --build` |
+| Push changes on git - all files (easy for MOSS guys lol) | `git add . git commit -m "MESSAGE HERE" git push` |
+| Create a clone of a repo - your own just local changes without pull requests| `git clone URL_HERE` |
+| Pull changes from a repo | `git pull` |
 
 `env/config.json` changes don't need a restart — it's re-read every poll.
 
@@ -119,3 +122,25 @@ If you ever want to reset the history, just stop the container and delete
   a self-signed cert.
 - **401/403 from FortiGate or LibreNMS** — token is invalid, revoked, or
   lacks permissions.
+
+
+## For MOSS Specifically
+- **Updating the client** — Push changes to main on this repo, pull changes on the RasPi, shutdown the old docker container living on the RasPi, and rebuild using the commands above
+- **Thanks for a great summer!** — LMK if anything needs to be added as I can help with the program and what's going on.
+- **Creating your own clone** — Currently the RasPi uses my repo, if you decide to make your own changes please run the following commands to make the transition as easy as possible
+  1. **End Previous Running Containers** 
+    '''bash
+      docker compose down
+    '''
+  2. **Clone your repo** — Set your repo to public and download
+    '''bash
+      cd ~
+      cd YOUR_GIT_PROJECT_NAME
+      git clone YOUR_GIT_URL_HERE
+    '''
+  3. **Run the project** — Run using docker commands shown earlier
+    '''bash
+      docker compose build
+      docker compose up
+    '''
+  

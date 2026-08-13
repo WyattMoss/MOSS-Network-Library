@@ -238,7 +238,7 @@ function ensureWanCard(key, name) {
           },
         },
         plugins: {
-          legend: { labels: { color: '#d7dee4', font: { family: 'Inter', size: 11 }, boxWidth: 12 } },
+          legend: { labels: { color: '#d7dee4', font: { family: 'IBM Plex Mono', size: 11 }, boxWidth: 12 } },
         },
       },
     });
