@@ -221,7 +221,7 @@ function ensureWanCard(key, name) {
         ],
       },
       options: {
-        responsive: true,
+        responsive: true,   // <-- If you want to change the chart size dynamically, set this to true. If you want to set a fixed size, set it to false and use CSS to control the size of the canvas.
         maintainAspectRatio: false,
         animation: false,
         scales: {
